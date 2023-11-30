@@ -18,7 +18,7 @@ db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+    app.config['SQLALCHEMY_DATABASE_URI'] = "https://shiny-space-memory-wwj64xx5xwxh9pxp-3000.app.github.dev"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 MIGRATE = Migrate(app, db)
@@ -37,6 +37,24 @@ def sitemap():
     return generate_sitemap(app)
 
 # USER-----------------------------------------------------------------------------------------------
+
+#Create a User
+@app.route('/user', methods=['POST'])
+def create_user():
+    # Process the information coming from the client
+    user_data = request.get_json()
+
+    # We create an instance without being recorded in the database
+    user = User()
+    user.firstName = user_data["firstName"]
+    user.lastName = user_data["lastName"]
+    user.email = user_data["email"]
+
+    if not (user.name and user.last_name and user.email):
+        return jsonify({'message': 'All fields are required'}), 400
+
+    return jsonify({'message': 'User registered successfully'}), 201
+
 
 #Get all users
 @app.route('/users', methods=['GET'])
@@ -61,7 +79,7 @@ def get_users():
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_one_user(user_id):
     #filter all users by id
-    user_query = User.query.filter_by(id = user_id).first()
+    user_query = User.query.filter_by(user = user_id).first()
 
     if user_query is None:
         return jsonify({"msg": "User with id: " + str(user_id) + " doesn't exist"}), 404
